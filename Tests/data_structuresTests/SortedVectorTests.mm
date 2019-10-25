@@ -1,90 +1,94 @@
 #import <XCTest/XCTest.h>
-#import <sorted_vector.hpp>
+#import <vector_ordered.hpp>
+#include <iterator>
+using namespace sisoje;
 
 typedef std::vector<int> int_vector;
 
-@interface SortedVectorTests: XCTestCase @end
+struct Custom { int value; };
+
+bool operator<(const Custom &x, const Custom &y) {
+    return x.value < y.value;
+}
+
+template<>
+struct std::less<Custom> {
+    bool operator()(const Custom& x, const Custom& y) const {
+        return x.value < y.value;
+    }
+};
+
+template<>
+struct std::greater<Custom> {
+    bool operator()(const Custom& x, const Custom& y) const {
+        return x.value > y.value;
+    }
+};
+
+@interface SortedVectorTests: XCTestCase
+@end
 
 @implementation SortedVectorTests
 
-- (void)testIsSortedAsc {
-    typedef sorted_vector<true> checker;
-    XCTAssertFalse(checker::isSorted(int_vector({2, 1})));
-    XCTAssertTrue(checker::isSorted(int_vector({1, 2})));
-    XCTAssertTrue(checker::isSorted(int_vector({1, 1})));
-    XCTAssertTrue(checker::isSorted(int_vector({1})));
-    XCTAssertTrue(checker::isSorted(int_vector({})));
+- (void)testIsSorted1 {
+    const int v[] = {1, 2};
+    XCTAssertTrue(vector_ascending::is_sorted(std::begin(v), std::end(v)));
+    XCTAssertFalse(vector_descending::is_sorted(std::begin(v), std::end(v)));
 }
 
-- (void)testIsSortedDesc {
-    typedef sorted_vector<false> checker;
-    XCTAssertFalse(checker::isSorted(int_vector({1, 2})));
-    XCTAssertTrue(checker::isSorted(int_vector({2, 1})));
-    XCTAssertTrue(checker::isSorted(int_vector({1, 1})));
-    XCTAssertTrue(checker::isSorted(int_vector({1})));
-    XCTAssertTrue(checker::isSorted(int_vector({})));
+- (void)testIsSorted {
+    const auto vec11 = int_vector { 1, 1 };
+    const auto vec12 = int_vector { 1, 2 };
+    const auto vec21 = int_vector { 2, 1 };
+    const auto vec1 = int_vector { 1 };
+    const auto vecEmpty = int_vector();
+
+    // Test ascending
+    XCTAssertFalse(vector_ascending::is_sorted(vec21));
+    XCTAssertTrue(vector_ascending::is_sorted(vec12));
+    XCTAssertTrue(vector_ascending::is_sorted(vec11));
+    XCTAssertTrue(vector_ascending::is_sorted(vec1));
+    XCTAssertTrue(vector_ascending::is_sorted(vecEmpty));
+
+    // Test descending
+    XCTAssertTrue(vector_descending::is_sorted(vec21));
+    XCTAssertFalse(vector_descending::is_sorted(vec12));
+    XCTAssertTrue(vector_descending::is_sorted(vec11));
+    XCTAssertTrue(vector_descending::is_sorted(vec1));
+    XCTAssertTrue(vector_descending::is_sorted(vecEmpty));
+
 }
 
-- (void)testIndexFindingAsc {
-    typedef sorted_vector<true> checker;
-    auto asc = int_vector { 1 };
-    XCTAssertEqual(checker::firstIndex(asc, 1), 0);
-    XCTAssertEqual(checker::lastIndex(asc, 1), 0);
-    XCTAssertEqual(checker::firstIndex(asc, 2), -1);
-    XCTAssertEqual(checker::lastIndex(asc, 2), -1);
+- (void)testBounds {
+    const auto vec = int_vector { 1, 1 };
+
+    // Test ascending
+    XCTAssertEqual(vector_ascending::lower_bound(vec, 1), vec.begin());
+    XCTAssertEqual(vector_ascending::upper_bound(vec, 1), vec.end());
+    XCTAssertEqual(vector_ascending::lower_bound(vec, 2), vec.end());
+    XCTAssertEqual(vector_ascending::upper_bound(vec, 2), vec.end());
+    XCTAssertEqual(vector_ascending::lower_bound(vec, 0), vec.begin());
+    XCTAssertEqual(vector_ascending::upper_bound(vec, 0), vec.begin());
+
+    // Test descending
+    XCTAssertEqual(vector_descending::lower_bound(vec, 1), vec.begin());
+    XCTAssertEqual(vector_descending::upper_bound(vec, 1), vec.end());
+    XCTAssertEqual(vector_descending::lower_bound(vec, 2), vec.begin());
+    XCTAssertEqual(vector_descending::upper_bound(vec, 2), vec.begin());
+    XCTAssertEqual(vector_descending::lower_bound(vec, 0), vec.end());
+    XCTAssertEqual(vector_descending::upper_bound(vec, 0), vec.end());
 }
 
-- (void)testIndexFindingDesc {
-    typedef sorted_vector<true> checker;
-    auto asc = int_vector { 1 };
-    XCTAssertEqual(checker::firstIndex(asc, 1), 0);
-    XCTAssertEqual(checker::lastIndex(asc, 1), 0);
-    XCTAssertEqual(checker::firstIndex(asc, 2), -1);
-    XCTAssertEqual(checker::lastIndex(asc, 2), -1);
-}
+-(void)testCustom {
+    auto vec = std::vector<Custom>();
+    vec.push_back(Custom { 1 });
+    vec.push_back(Custom { 2 });
+    vec.push_back(Custom { 3 });
+    XCTAssertTrue(vector_ascending::is_sorted(vec));
+    XCTAssertFalse(vector_descending::is_sorted(vec));
 
-- (void)testFirstLastAsc {
-    typedef sorted_vector<true> checker;
-    auto asc = int_vector { 1, 1 };
-    XCTAssertEqual(checker::firstIndex(asc, 1), 0);
-    XCTAssertEqual(checker::lastIndex(asc, 1), 1);
-}
-
-- (void)testFirstLastDesc {
-    typedef sorted_vector<false> checker;
-    auto asc = int_vector { 1, 1 };
-    XCTAssertEqual(checker::firstIndex(asc, 1), 0);
-    XCTAssertEqual(checker::lastIndex(asc, 1), 1);
-}
-
-- (void)testInsertAsc {
-    typedef sorted_vector<true> checker;
-    auto vec = int_vector();
-    checker::insert(vec, 1);
-    checker::insert(vec, 1);
-    XCTAssertTrue(checker::isSorted(int_vector({1, 1})));
-}
-
-- (void)testInsertDesc {
-    typedef sorted_vector<false> checker;
-    auto vec = int_vector();
-    checker::insert(vec, 1);
-    checker::insert(vec, 1);
-    XCTAssertTrue(checker::isSorted(int_vector({1, 1})));
-}
-
-- (void)testRemoveOneAsc {
-    typedef sorted_vector<true> checker;
-    auto vec = int_vector({1});
-    XCTAssertEqual(checker::removeOne(vec, 1), 0);
-    XCTAssertEqual(checker::removeOne(vec, 1), -1);
-}
-
-- (void)testRemoveOneDesc {
-    typedef sorted_vector<false> checker;
-    auto vec = int_vector({1});
-    XCTAssertEqual(checker::removeOne(vec, 1), 0);
-    XCTAssertEqual(checker::removeOne(vec, 1), -1);
+    auto p = vector_ascending::lower_bound(vec, Custom { 2 } );
+    XCTAssertEqual(p-vec.begin(), 1);
 }
 
 @end
