@@ -1,9 +1,9 @@
 #import <XCTest/XCTest.h>
 #import <permutations.hpp>
 
-@interface PermutationsTestCase: XCTestCase @end
+@interface PermutationsTests: XCTestCase @end
 
-@implementation PermutationsTestCase
+@implementation PermutationsTests
 
 - (void)testNumberOfPermutations {
     XCTAssertEqual(Permutations::numberOfPermutations(3), 6);

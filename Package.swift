@@ -10,6 +10,9 @@ let package = Package(
         .library(
             name: "combinatorics",
             targets: ["combinatorics"]),
+        .library(
+            name: "data_structures",
+            targets: ["data_structures"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -21,8 +24,15 @@ let package = Package(
         .target(
             name: "combinatorics",
             dependencies: []),
+        .target(
+            name: "data_structures",
+            dependencies: []),
         .testTarget(
             name: "combinatoricsTests",
             dependencies: ["combinatorics"]),
-    ]
+        .testTarget(
+            name: "data_structuresTests",
+            dependencies: ["data_structures"]),
+    ],
+    cxxLanguageStandard: .cxx14
 )
