@@ -37,28 +37,14 @@
          <BuildActionEntry
             buildForTesting = "YES"
             buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "combinatoricsTests"
-               BuildableName = "combinatoricsTests"
-               BlueprintName = "combinatoricsTests"
-               ReferencedContainer = "container:">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "data_structuresTests"
-               BuildableName = "data_structuresTests"
-               BlueprintName = "data_structuresTests"
+               BlueprintIdentifier = "c_wrapper"
+               BuildableName = "c_wrapper"
+               BlueprintName = "c_wrapper"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -71,6 +57,16 @@
       shouldUseLaunchSchemeArgsEnv = "YES"
       codeCoverageEnabled = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "c_wrapperTests"
+               BuildableName = "c_wrapperTests"
+               BlueprintName = "c_wrapperTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
          <TestableReference
             skipped = "NO">
             <BuildableReference

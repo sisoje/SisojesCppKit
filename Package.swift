@@ -11,6 +11,9 @@ let package = Package(
             name: "combinatorics",
             targets: ["combinatorics"]),
         .library(
+            name: "c_wrapper",
+            targets: ["c_wrapper"]),
+        .library(
             name: "data_structures",
             targets: ["data_structures"]),
     ],
@@ -25,6 +28,9 @@ let package = Package(
             name: "combinatorics",
             dependencies: []),
         .target(
+            name: "c_wrapper",
+            dependencies: ["data_structures"]),
+        .target(
             name: "data_structures",
             dependencies: []),
         .testTarget(
@@ -33,6 +39,9 @@ let package = Package(
         .testTarget(
             name: "data_structuresTests",
             dependencies: ["data_structures"]),
+        .testTarget(
+            name: "c_wrapperTests",
+            dependencies: ["c_wrapper"]),
     ],
     cxxLanguageStandard: .cxx14
 )
