@@ -3,7 +3,7 @@ os:
 osx_image: xcode11.1
 language: swift
 script:
-  - swift test
+  - xcodebuild -workspace .swiftpm/xcode/package.xcworkspace -scheme SisojesCppKit-Package test
 notifications:
   email:
     on_success: change
