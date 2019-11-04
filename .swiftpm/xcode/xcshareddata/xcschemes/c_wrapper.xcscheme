@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "data_structures"
-               BuildableName = "data_structures"
-               BlueprintName = "data_structures"
+               BlueprintIdentifier = "c_wrapper"
+               BuildableName = "c_wrapper"
+               BlueprintName = "c_wrapper"
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
@@ -50,9 +50,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "data_structures"
-            BuildableName = "data_structures"
-            BlueprintName = "data_structures"
+            BlueprintIdentifier = "c_wrapper"
+            BuildableName = "c_wrapper"
+            BlueprintName = "c_wrapper"
             ReferencedContainer = "container:">
          </BuildableReference>
       </MacroExpansion>

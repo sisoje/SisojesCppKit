@@ -8,14 +8,11 @@ let package = Package(
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
-            name: "combinatorics",
-            targets: ["combinatorics"]),
+            name: "sisoje",
+            targets: ["sisoje"]),
         .library(
             name: "c_wrapper",
             targets: ["c_wrapper"]),
-        .library(
-            name: "data_structures",
-            targets: ["data_structures"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -25,20 +22,14 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
-            name: "combinatorics",
+            name: "sisoje",
             dependencies: []),
         .target(
             name: "c_wrapper",
-            dependencies: ["data_structures"]),
-        .target(
-            name: "data_structures",
-            dependencies: []),
+            dependencies: ["sisoje"]),
         .testTarget(
-            name: "combinatoricsTests",
-            dependencies: ["combinatorics"]),
-        .testTarget(
-            name: "data_structuresTests",
-            dependencies: ["data_structures"]),
+            name: "sisojeTests",
+            dependencies: ["sisoje"]),
         .testTarget(
             name: "c_wrapperTests",
             dependencies: ["c_wrapper"]),
