@@ -21,10 +21,10 @@ auto frequency_map(IT begin, IT end) {
     return result;
 }
 
-template <typename T>
-int number_of_permutations(const std::vector<T>& elements) {
-    const auto frequencyMap = frequency_map(SISOJE_RANGE(elements));
-    return std::accumulate(SISOJE_RANGE(frequencyMap), factorial(elements.size()), [](auto permutations, auto pair) {
+template <typename IT>
+int number_of_permutations(IT begin, IT end) {
+    const auto frequencyMap = frequency_map(begin, end);
+    return std::accumulate(SISOJE_RANGE(frequencyMap), factorial(end - begin), [](auto permutations, auto pair) {
         return permutations / factorial(pair.second);
     });
 }
@@ -39,7 +39,7 @@ auto generate_permutation(int index, IT begin, IT end) {
     std::vector<typename std::iterator_traits<IT>::value_type> permutation(places);
     auto currentIndex = index;
     auto currentTotal = total;
-    for(auto i=0;i<places;++i) {
+    for(int i=0;i<places;++i) {
         for (auto it = frequencyMap.begin(); it != frequencyMap.end(); ++it) {
             int totalWithoutIt = currentTotal * it->second / (places - i);
             if (currentIndex < totalWithoutIt) {

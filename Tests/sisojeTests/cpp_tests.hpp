@@ -11,6 +11,9 @@ namespace sisoje_tests {
 
 typedef std::vector<int> int_vector;
 
+const auto int_empty = int_vector {};
+const auto int_one = int_vector {1};
+
 struct Custom {
     int value;
 };

@@ -17,43 +17,41 @@ using namespace sisoje_tests;
     const int vec11[] = {1, 1};
     const int vec12[] = {1, 2};
     const int vec21[] = {2, 1};
-    const int vec1[] = {1};
-    const int_vector vecEmpty;
 
     // Test ascending
     XCTAssertFalse(sisoje::ascending::is_sorted(SISOJE_RANGE(vec21)));
     XCTAssertTrue(sisoje::ascending::is_sorted(SISOJE_RANGE(vec12)));
     XCTAssertTrue(sisoje::ascending::is_sorted(SISOJE_RANGE(vec11)));
-    XCTAssertTrue(sisoje::ascending::is_sorted(SISOJE_RANGE(vec1)));
-    XCTAssertTrue(sisoje::ascending::is_sorted(SISOJE_RANGE(vecEmpty)));
+    XCTAssertTrue(sisoje::ascending::is_sorted(SISOJE_RANGE(int_one)));
+    XCTAssertTrue(sisoje::ascending::is_sorted(SISOJE_RANGE(int_empty)));
 
     // Test descending
     XCTAssertTrue(sisoje::descending::is_sorted(SISOJE_RANGE(vec21)));
     XCTAssertFalse(sisoje::descending::is_sorted(SISOJE_RANGE(vec12)));
     XCTAssertTrue(sisoje::descending::is_sorted(SISOJE_RANGE(vec11)));
-    XCTAssertTrue(sisoje::descending::is_sorted(SISOJE_RANGE(vec1)));
-    XCTAssertTrue(sisoje::descending::is_sorted(SISOJE_RANGE(vecEmpty)));
+    XCTAssertTrue(sisoje::descending::is_sorted(SISOJE_RANGE(int_one)));
+    XCTAssertTrue(sisoje::descending::is_sorted(SISOJE_RANGE(int_empty)));
 
 }
 
 - (void)testBounds {
-    const auto vec = int_vector {1, 1};
+    const int vec[] = {1, 1};
 
     // Test ascending
-    XCTAssertEqual(sisoje::ascending::lower_bound(SISOJE_RANGE(vec), 1), vec.begin());
-    XCTAssertEqual(sisoje::ascending::upper_bound(SISOJE_RANGE(vec), 1), vec.end());
-    XCTAssertEqual(sisoje::ascending::lower_bound(SISOJE_RANGE(vec), 2), vec.end());
-    XCTAssertEqual(sisoje::ascending::upper_bound(SISOJE_RANGE(vec), 2), vec.end());
-    XCTAssertEqual(sisoje::ascending::lower_bound(SISOJE_RANGE(vec), 0), vec.begin());
-    XCTAssertEqual(sisoje::ascending::upper_bound(SISOJE_RANGE(vec), 0), vec.begin());
+    XCTAssertEqual(sisoje::ascending::lower_bound(SISOJE_RANGE(vec), 1), std::begin(vec));
+    XCTAssertEqual(sisoje::ascending::upper_bound(SISOJE_RANGE(vec), 1), std::end(vec));
+    XCTAssertEqual(sisoje::ascending::lower_bound(SISOJE_RANGE(vec), 2), std::end(vec));
+    XCTAssertEqual(sisoje::ascending::upper_bound(SISOJE_RANGE(vec), 2), std::end(vec));
+    XCTAssertEqual(sisoje::ascending::lower_bound(SISOJE_RANGE(vec), 0), std::begin(vec));
+    XCTAssertEqual(sisoje::ascending::upper_bound(SISOJE_RANGE(vec), 0), std::begin(vec));
 
     // Test descending
-    XCTAssertEqual(sisoje::descending::lower_bound(SISOJE_RANGE(vec), 1), vec.begin());
-    XCTAssertEqual(sisoje::descending::upper_bound(SISOJE_RANGE(vec), 1), vec.end());
-    XCTAssertEqual(sisoje::descending::lower_bound(SISOJE_RANGE(vec), 2), vec.begin());
-    XCTAssertEqual(sisoje::descending::upper_bound(SISOJE_RANGE(vec), 2), vec.begin());
-    XCTAssertEqual(sisoje::descending::lower_bound(SISOJE_RANGE(vec), 0), vec.end());
-    XCTAssertEqual(sisoje::descending::upper_bound(SISOJE_RANGE(vec), 0), vec.end());
+    XCTAssertEqual(sisoje::descending::lower_bound(SISOJE_RANGE(vec), 1), std::begin(vec));
+    XCTAssertEqual(sisoje::descending::upper_bound(SISOJE_RANGE(vec), 1), std::end(vec));
+    XCTAssertEqual(sisoje::descending::lower_bound(SISOJE_RANGE(vec), 2), std::begin(vec));
+    XCTAssertEqual(sisoje::descending::upper_bound(SISOJE_RANGE(vec), 2), std::begin(vec));
+    XCTAssertEqual(sisoje::descending::lower_bound(SISOJE_RANGE(vec), 0), std::end(vec));
+    XCTAssertEqual(sisoje::descending::upper_bound(SISOJE_RANGE(vec), 0), std::end(vec));
 }
 
 -(void)testCustom {
