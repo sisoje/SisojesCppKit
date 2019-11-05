@@ -7,7 +7,7 @@
 
 namespace sisoje {
 
-static int factorial(int N) {
+inline int factorial(int N) {
     return std::tgamma(N+1);
 }
 
@@ -26,24 +26,6 @@ int number_of_permutations(const std::vector<T>& elements) {
     return std::accumulate(frequencyMap.begin(), frequencyMap.end(), factorial(elements.size()), [](auto permutations, auto pair) {
         return permutations / factorial(pair.second);
     });
-}
-
-template<typename PairIterator>
-auto pairs_second(PairIterator begin, PairIterator end) {
-    std::vector<typename std::iterator_traits<PairIterator>::value_type::second_type> vec;
-    std::transform(begin, end, std::back_inserter(vec), [](auto pair){
-        return pair.second;
-    });
-    return vec;
-}
-
-template<typename PairIterator>
-auto pairs_first(PairIterator begin, PairIterator end) {
-    std::vector<typename std::iterator_traits<PairIterator>::value_type::first_type> vec;
-    std::transform(begin, end, std::back_inserter(vec), [](auto pair){
-        return pair.first;
-    });
-    return vec;
 }
 
 template <typename T>
@@ -74,7 +56,5 @@ std::vector<T> generate_permutation(int index, const std::vector<T>& elements) {
     return permutation;
 }
 
-}
-
-
+} // namespace sisoje
 #endif // SISOJE_PERMUTATIONS_H_

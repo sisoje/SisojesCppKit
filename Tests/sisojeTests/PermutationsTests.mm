@@ -1,7 +1,5 @@
-#import <XCTest/XCTest.h>
 #include <permutations.hpp>
-#include <vector>
-#include <algorithm>
+#include "cpp_tests.hpp"
 
 @interface PermutationsTests: XCTestCase
 @end
@@ -17,7 +15,7 @@
 
 -(void) testCount {
     const auto vec = std::vector<int> {1, 2, 2};
-    const auto frequencyMap = sisoje::frequency_map(vec.begin(), vec.end());
+    const auto frequencyMap = sisoje::frequency_map(SISOJE_BEG_END(vec));
     XCTAssertEqual(frequencyMap.size(), 2);
     XCTAssertEqual(frequencyMap.at(1), 1);
     XCTAssertEqual(frequencyMap.at(2), 2);
@@ -38,11 +36,11 @@
     XCTAssertGreaterThan(n, 0);
     auto vec = cvec;
     std::sort(vec.begin(), vec.end());
-    for(int i = 0; i < n; ++i, std::next_permutation(vec.begin(), vec.end())) {
+    for(int i = 0; i < n; ++i, std::next_permutation(SISOJE_BEG_END(vec))) {
         const auto perm = sisoje::generate_permutation(i, cvec);
         XCTAssertEqual(perm, vec);
     }
-    XCTAssert(std::is_sorted(vec.begin(), vec.end()));
+    XCTAssert(std::is_sorted(SISOJE_BEG_END(vec)));
 }
 
 -(void)testGeneratePermutationEdge {

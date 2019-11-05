@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #include <c_wrapper.h>
 
-@interface CwrapperTests: XCTestCase @end
+@interface CwrapperTests: XCTestCase
+@end
 
 @implementation CwrapperTests
 

@@ -10,5 +10,4 @@ int c_BinaryFindInsertionIndexInt(const int *p, int count, int element, int asce
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-
 #endif // SISOJE_C_WRAPPER_H_

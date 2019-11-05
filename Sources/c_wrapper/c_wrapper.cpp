@@ -1,12 +1,12 @@
 #include <c_wrapper.h>
-#include <vector_ordered.hpp>
+#include <sorted.hpp>
 
 template <typename T>
 int cpp_BinaryFindInsertionIndex(const T *p, int count, const T &element, int ascending, int first) {
     auto func = ascending ?
-    (first ? (sisoje::vector_ascending::lower_bound<const T*, const T&>) : (sisoje::vector_ascending::upper_bound<const T*, const T&>))
+    (first ? (sisoje::ascending::lower_bound<const T*, const T&>) : (sisoje::ascending::upper_bound<const T*, const T&>))
     :
-    (first ? (sisoje::vector_descending::lower_bound<const T*, const T&>) : (sisoje::vector_descending::upper_bound<const T*, const T&>));
+    (first ? (sisoje::descending::lower_bound<const T*, const T&>) : (sisoje::descending::upper_bound<const T*, const T&>));
 
     return func(p, p+count, element) - p;
 }
