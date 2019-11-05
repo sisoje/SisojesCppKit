@@ -14,11 +14,11 @@ using namespace sisoje_tests;
 }
 
 - (void)testIsSorted {
-    const auto vec11 = int_vector {1, 1};
-    const auto vec12 = int_vector {1, 2};
-    const auto vec21 = int_vector {2, 1};
-    const auto vec1 = int_vector {1};
-    const auto vecEmpty = int_vector {};
+    const int vec11[] = {1, 1};
+    const int vec12[] = {1, 2};
+    const int vec21[] = {2, 1};
+    const int vec1[] = {1};
+    const int_vector vecEmpty;
 
     // Test ascending
     XCTAssertFalse(sisoje::ascending::is_sorted(SISOJE_RANGE(vec21)));
@@ -57,14 +57,15 @@ using namespace sisoje_tests;
 }
 
 -(void)testCustom {
-    auto vec = std::vector<Custom>();
-    vec.push_back(Custom {1});
-    vec.push_back(Custom {2});
-    vec.push_back(Custom {3});
+    const Custom vec[] = {
+        Custom {1},
+        Custom {2},
+        Custom {3}
+    };
     XCTAssertTrue(sisoje::ascending::is_sorted(SISOJE_RANGE(vec)));
     XCTAssertFalse(sisoje::descending::is_sorted(SISOJE_RANGE(vec)));
     const auto p = sisoje::ascending::lower_bound(SISOJE_RANGE(vec), Custom {2} );
-    XCTAssertEqual(p - vec.begin(), 1);
+    XCTAssertEqual(p - std::begin(vec), 1);
 }
 
 @end

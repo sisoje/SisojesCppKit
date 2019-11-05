@@ -5,8 +5,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-
-#define SISOJE_RANGE(COLECTION) std::begin(COLECTION), std::end(COLECTION)
+#include <sisoje_defines.hpp>
 
 namespace sisoje_tests {
 

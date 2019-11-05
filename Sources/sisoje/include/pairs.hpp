@@ -19,7 +19,7 @@ auto pairs_second(PairIterator begin, PairIterator end) {
 
 template<typename PairIterator>
 auto pairs_first(PairIterator begin, PairIterator end) {
-    std::vector<typename std::remove_const_t<typename std::iterator_traits<PairIterator>::value_type::first_type>> vec;
+    std::vector<std::remove_const_t<typename std::iterator_traits<PairIterator>::value_type::first_type>> vec;
     std::transform(begin, end, std::back_inserter(vec), [](auto pair){
         return pair.first;
     });

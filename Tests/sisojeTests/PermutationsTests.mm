@@ -15,7 +15,7 @@ using namespace sisoje_tests;
 }
 
 -(void) testCount {
-    const auto vec = int_vector {1, 2, 2};
+    const int vec[] = {1, 2, 2};
     const auto frequencyMap = sisoje::frequency_map(SISOJE_RANGE(vec));
     XCTAssertEqual(frequencyMap.size(), 2);
     XCTAssertEqual(frequencyMap.at(1), 1);

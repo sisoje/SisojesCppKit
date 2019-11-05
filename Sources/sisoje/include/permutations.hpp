@@ -4,6 +4,7 @@
 #include <cmath>
 #include <map>
 #include <numeric>
+#include "sisoje_defines.hpp"
 
 namespace sisoje {
 
@@ -22,8 +23,8 @@ auto frequency_map(IT begin, IT end) {
 
 template <typename T>
 int number_of_permutations(const std::vector<T>& elements) {
-    const auto frequencyMap = frequency_map(elements.begin(), elements.end());
-    return std::accumulate(frequencyMap.begin(), frequencyMap.end(), factorial(elements.size()), [](auto permutations, auto pair) {
+    const auto frequencyMap = frequency_map(SISOJE_RANGE(elements));
+    return std::accumulate(SISOJE_RANGE(frequencyMap), factorial(elements.size()), [](auto permutations, auto pair) {
         return permutations / factorial(pair.second);
     });
 }
@@ -32,7 +33,7 @@ template <typename IT>
 auto generate_permutation(int index, IT begin, IT end) {
     auto frequencyMap = frequency_map(begin, end);
     const auto places = end - begin;
-    const auto total = std::accumulate(frequencyMap.begin(), frequencyMap.end(), factorial(places), [](auto permutations, auto pair) {
+    const auto total = std::accumulate(SISOJE_RANGE(frequencyMap), factorial(places), [](auto permutations, auto pair) {
         return permutations / factorial(pair.second);
     });
     std::vector<typename std::iterator_traits<IT>::value_type> permutation(places);
