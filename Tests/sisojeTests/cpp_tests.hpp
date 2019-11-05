@@ -6,6 +6,21 @@
 #include <vector>
 #include <algorithm>
 
-#define SISOJE_BEG_END(BEG_END) BEG_END.begin(), BEG_END.end()
+#define SISOJE_RANGE(COLECTION) std::begin(COLECTION), std::end(COLECTION)
 
+namespace sisoje_tests {
+
+typedef std::vector<int> int_vector;
+
+struct Custom {
+    int value;
+};
+inline bool operator<(const Custom &x, const Custom &y) {
+    return x.value < y.value;
+}
+inline bool operator>(const Custom &x, const Custom &y) {
+    return x.value > y.value;
+}
+
+} // sisoje_tests
 #endif // SISOJE_CPP_TESTS_H_

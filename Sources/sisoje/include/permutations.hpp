@@ -28,14 +28,14 @@ int number_of_permutations(const std::vector<T>& elements) {
     });
 }
 
-template <typename T>
-std::vector<T> generate_permutation(int index, const std::vector<T>& elements) {
-    auto frequencyMap = frequency_map(elements.begin(), elements.end());
-    const auto places = elements.size();
+template <typename IT>
+auto generate_permutation(int index, IT begin, IT end) {
+    auto frequencyMap = frequency_map(begin, end);
+    const auto places = end - begin;
     const auto total = std::accumulate(frequencyMap.begin(), frequencyMap.end(), factorial(places), [](auto permutations, auto pair) {
         return permutations / factorial(pair.second);
     });
-    std::vector<T> permutation(places);
+    std::vector<typename std::iterator_traits<IT>::value_type> permutation(places);
     auto currentIndex = index;
     auto currentTotal = total;
     for(auto i=0;i<places;++i) {

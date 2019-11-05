@@ -1,5 +1,6 @@
 #include <pairs.hpp>
 #include "cpp_tests.hpp"
+using namespace sisoje_tests;
 
 @interface PairsTests : XCTestCase
 @end
@@ -12,11 +13,11 @@
         {2,3}
     };
 
-    const auto keys = sisoje::pairs_first(SISOJE_BEG_END(map));
-    const auto values = sisoje::pairs_second(SISOJE_BEG_END(map));
+    const auto keys = sisoje::pairs_first(SISOJE_RANGE(map));
+    const auto values = sisoje::pairs_second(SISOJE_RANGE(map));
 
-    XCTAssertEqual(keys, std::vector<int>({1, 2}));
-    XCTAssertEqual(values, std::vector<int>({2, 3}));
+    XCTAssertEqual(keys, int_vector({1, 2}));
+    XCTAssertEqual(values, int_vector({2, 3}));
 }
 
 @end
