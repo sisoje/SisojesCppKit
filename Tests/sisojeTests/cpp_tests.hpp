@@ -3,9 +3,14 @@
 
 #include <XCTest/XCTest.h>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <algorithm>
 #include <sisoje_defines.hpp>
+#include <fonts.hpp>
+#include <iostream>
+#include "lena.hpp"
+#include <numeric>
 
 namespace sisoje_tests {
 
