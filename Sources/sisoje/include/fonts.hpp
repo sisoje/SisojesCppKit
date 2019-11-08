@@ -1,9 +1,11 @@
 #ifndef SISOJE_FONTS_H_
 #define SISOJE_FONTS_H_
 
+#include <sstream>
 #include <array>
 #include <bitset>
 #include <numeric>
+#include <unordered_map>
 #include "sisoje_defines.hpp"
 
 namespace sisoje {
@@ -42,8 +44,8 @@ struct letter {
             heightAverage[h] = SISOJE_AVG(pixels[h]);
         }
 
-        widthMax = *std::max_element(SISOJE_RANGE(widthAverage));
-        heightMax = *std::max_element(SISOJE_RANGE(heightAverage));
+        widthMax = SISOJE_MAX(widthAverage);
+        heightMax = SISOJE_MAX(heightAverage);
 
         allAverage = WIDTH < HEIGHT ? SISOJE_AVG(widthAverage) : SISOJE_AVG(heightAverage);
     }
@@ -71,6 +73,32 @@ struct font_height {
         }
     }
 };
+
+
+struct tag_pusher {
+    std::string tag;
+    std::stringstream &stream;
+    tag_pusher(std::stringstream &stream, const std::string& tag) : tag(tag), stream(stream) {
+        stream << '<' << tag << '>';
+    }
+    ~tag_pusher() {
+        stream << "</" << tag << '>';
+    }
+};
+
+inline std::string htmlEscape(char ch) {
+    static const std::unordered_map<char, std::string> htmlMap = {
+        {' ', "&nbsp;"},
+        {'&',"&amp;"},
+        {'<', "&lt;"},
+        {'>', "&gt;"},
+        {'"', "&quot;"},
+        {'\'', "&apos;"}
+    };
+    const auto it = htmlMap.find(ch);
+    return it != htmlMap.end() ? it->second : std::string(1, ch);
+}
+
 
 static const uint8_t defaultFont[95][13] = {
 {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},

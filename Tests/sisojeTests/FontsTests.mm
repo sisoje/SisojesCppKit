@@ -86,25 +86,17 @@ inline std::vector<std::string> makeAscii(const void* pRgba, const int width, co
 @implementation FontsTests
 
 - (void)testFonts {
-    const int width = 666;
+    const int width = 512;
     const int height = width;
-    NSString *base64 = [NSString stringWithUTF8String:kale666.c_str()];
+    NSString *base64 = [NSString stringWithUTF8String:nole512.c_str()];
     NSData *data = [[NSData alloc] initWithBase64EncodedString:base64 options:0];
     XCTAssertEqual(width*height*4, data.length);
     auto date = [NSDate new];
+    auto artGray = makeAscii(data.bytes, width, height, 0.80, grayscale);
     auto artR = makeAscii(data.bytes, width, height, 0.80, grayscaleR);
     auto artG = makeAscii(data.bytes, width, height, 0.80, grayscaleG);
     auto artB = makeAscii(data.bytes, width, height, 0.80, grayscaleB);
     auto elapsed = date.timeIntervalSinceNow;
-
-    const std::unordered_map<char, std::string> html = {
-        {' ', "&nbsp;"},
-        {'&',"&amp;"},
-        {'<', "&lt;"},
-        {'>', "&gt;"},
-        {'"', "&quot;"},
-        {'\'', "&apos;"}
-    };
 
     std::vector<std::string> art(artR.size());
     std::string htm;
@@ -118,9 +110,7 @@ inline std::vector<std::string> makeAscii(const void* pRgba, const int width, co
         for(auto x = 0; x < line.size(); ++x) {
             auto colorIndex = (x + y%2) % 3;
             auto ch = (*lines[colorIndex])[x];
-            auto it = html.find(ch);
-            auto sch = it != html.end() ? it->second : std::string(1, ch);
-
+            auto sch = sisoje::htmlEscape(ch);
             const auto &tag = colorTags[colorIndex];
             line[x] = ch;
             htm += "<"+tag+">"+sch+"</"+tag+">";
@@ -135,7 +125,7 @@ inline std::vector<std::string> makeAscii(const void* pRgba, const int width, co
     [fff writeToURL:url atomically:YES];
 
     NSLog(@"Asci took: %@", @(elapsed));
-    for(const auto& line: art) {
+    for(const auto& line: artGray) {
         for(char ch: line) {
             std::cout << ch;
         }
@@ -145,8 +135,7 @@ inline std::vector<std::string> makeAscii(const void* pRgba, const int width, co
     NSLog(@"Asci took: %@", @(elapsed));
     for(const auto& line: art) {
         for(char ch: line) {
-            auto it = html.find(ch);
-            auto sch = it != html.end() ? it->second : std::string(1, ch);
+            auto sch = sisoje::htmlEscape(ch);
             std::cout << sch;
         }
         std::cout << "</br>" << std::endl;
