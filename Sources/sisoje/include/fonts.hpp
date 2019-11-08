@@ -3,31 +3,76 @@
 
 #include <array>
 #include <bitset>
-
-#include "font-headers/IBM_VGA_8x8.h"
-#include "font-headers/IBM_VGA_8x14.h"
+#include <numeric>
 #include "sisoje_defines.hpp"
-
 
 namespace sisoje {
 
-inline uint8_t reverse_bits(uint8_t b) {
-    return (uint8_t)(((b * 0x0802U & 0x22110U) | (b * 0x8020U & 0x88440U)) * 0x10101U >> 16);
+template <typename DoubleArray>
+constexpr auto matrix_begin(DoubleArray& arrOfArr) {
+    return &arrOfArr[0][0];
 }
 
-template <size_t HEIGHT>
-struct font_height {
-    constexpr static auto bit_lines(const void *pFont, int index) {
-        std::array<std::bitset<8>, HEIGHT> ret;
-        const uint8_t *pBase = (uint8_t*)pFont + index*HEIGHT;
-        for(int i=0;i<HEIGHT;++i) {
-            ret[i] = std::bitset<8>(reverse_bits(pBase[HEIGHT-i-1]));
+template <typename DoubleArray>
+constexpr auto matrix_end(DoubleArray& arrOfArr) {
+    return &arrOfArr[0][0] + sizeof(arrOfArr) / sizeof(arrOfArr[0][0]);
+}
+
+//struct col_iterator : public std::iterator<std::forward_iterator_tag, value_type>
+
+template <size_t WIDTH = 8, size_t HEIGHT = 13, typename T = double>
+struct letter {
+    constexpr static size_t area() {return WIDTH * HEIGHT;}
+    typedef std::array<std::array<T, WIDTH>, HEIGHT> matrix_type;
+    matrix_type pixels;
+    std::array<T, WIDTH> widthAverage;
+    std::array<T, HEIGHT> heightAverage;
+    T allAverage, widthMax, heightMax;
+
+    void calcAverages() {
+        SISOJE_FOR(w, WIDTH) {
+            T sum = 0;
+            SISOJE_IT(it, matrix_begin(pixels), matrix_end(pixels), w, WIDTH) {
+                sum += *it;
+            }
+            widthAverage[w] = sum / HEIGHT;
         }
-        return ret;
+
+        SISOJE_FOR(h, HEIGHT) {
+            heightAverage[h] = SISOJE_AVG(pixels[h]);
+        }
+
+        widthMax = *std::max_element(SISOJE_RANGE(widthAverage));
+        heightMax = *std::max_element(SISOJE_RANGE(heightAverage));
+
+        allAverage = WIDTH < HEIGHT ? SISOJE_AVG(widthAverage) : SISOJE_AVG(heightAverage);
     }
 };
 
-static const uint8_t defaultFont[][13] = {
+template <size_t WIDTH = 8, size_t HEIGHT = 13, size_t CHARACTERS = 95>
+struct font_height {
+    typedef letter<WIDTH, HEIGHT> letter_type;
+    constexpr static size_t asciiFontWidth = WIDTH;
+    constexpr static size_t asciiFontHeight = HEIGHT;
+    constexpr static size_t asciiCharacterNumber = CHARACTERS;
+    constexpr static size_t asciiFontPixels = asciiFontHeight * asciiFontHeight;
+
+    letter_type letters[CHARACTERS];
+
+    constexpr static void bit_lines(const void *pFont, int index, typename letter_type::matrix_type& ret) {
+        const uint8_t *pBase = (uint8_t*)pFont + index*HEIGHT;
+        SISOJE_FOR(h, HEIGHT) {
+            const uint8_t byte(pBase[HEIGHT-h-1]);
+            const std::bitset<WIDTH> bitset(byte);
+            auto &line = ret[h];
+            SISOJE_FOR(b, WIDTH) {
+                line[b] = bitset[WIDTH-b-1];
+            }
+        }
+    }
+};
+
+static const uint8_t defaultFont[95][13] = {
 {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 {0x00, 0x00, 0x18, 0x18, 0x00, 0x00, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18},
 {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x36, 0x36, 0x36, 0x36},

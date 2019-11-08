@@ -9,8 +9,11 @@
 #include <sisoje_defines.hpp>
 #include <fonts.hpp>
 #include <iostream>
-#include "lena.hpp"
+#include "daca.hpp"
+#include "nole.hpp"
+#include "kale.hpp"
 #include <numeric>
+#include <fstream>
 
 namespace sisoje_tests {
 
