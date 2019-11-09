@@ -22,9 +22,12 @@ constexpr auto matrix_end(DoubleArray& arrOfArr) {
 
 //struct col_iterator : public std::iterator<std::forward_iterator_tag, value_type>
 
-template <size_t WIDTH = 8, size_t HEIGHT = 13, typename T = double>
+template <size_t WIDTH = 8, size_t HEIGHT = 13, typename T = float>
 struct letter {
-    constexpr static size_t area() {return WIDTH * HEIGHT;}
+    constexpr size_t area() {return WIDTH * HEIGHT;}
+    constexpr size_t width() {return WIDTH;}
+    constexpr size_t height() {return HEIGHT;}
+
     typedef std::array<std::array<T, WIDTH>, HEIGHT> matrix_type;
     matrix_type pixels;
     std::array<T, WIDTH> widthAverage;
@@ -34,7 +37,7 @@ struct letter {
     void calcAverages() {
         SISOJE_FOR(w, WIDTH) {
             T sum = 0;
-            SISOJE_IT(it, matrix_begin(pixels), matrix_end(pixels), w, WIDTH) {
+            SISOJE_STRIDE(h, HEIGHT, it, matrix_begin(pixels) + w, WIDTH) {
                 sum += *it;
             }
             widthAverage[w] = sum / HEIGHT;
@@ -44,10 +47,21 @@ struct letter {
             heightAverage[h] = SISOJE_AVG(pixels[h]);
         }
 
-        widthMax = SISOJE_MAX(widthAverage);
-        heightMax = SISOJE_MAX(heightAverage);
+        widthMax = *SISOJE_MAX(widthAverage);
+        heightMax = *SISOJE_MAX(heightAverage);
 
         allAverage = WIDTH < HEIGHT ? SISOJE_AVG(widthAverage) : SISOJE_AVG(heightAverage);
+    }
+
+    void loadPixels(const uint8_t *pBase) {
+        SISOJE_FOR(h, HEIGHT) {
+            const uint8_t byte(pBase[HEIGHT-h-1]);
+            const std::bitset<WIDTH> bitset(byte);
+            auto &line = pixels[h];
+            SISOJE_FOR(b, WIDTH) {
+                line[b] = bitset[WIDTH-b-1];
+            }
+        }
     }
 };
 
@@ -99,6 +113,49 @@ inline std::string htmlEscape(char ch) {
     return it != htmlMap.end() ? it->second : std::string(1, ch);
 }
 
+template <typename T>
+struct letter_similarity {
+    T level;
+    T detail;
+};
+
+template <size_t WIDTH = 8, size_t HEIGHT = 13, size_t CHARACTERS = 95, typename T = float>
+struct font {
+    static constexpr size_t area() {return WIDTH * HEIGHT;}
+    static constexpr size_t width() {return WIDTH;}
+    static constexpr size_t height() {return HEIGHT;}
+    static constexpr size_t characters() {return CHARACTERS;}
+    typedef T level_type;
+
+    typedef letter<WIDTH, HEIGHT, T> letter_type;
+    std::array<letter_type, CHARACTERS> letters;
+    size_t max_letter_index;
+
+    T maxBrighness() const {
+        return letters[max_letter_index].allAverage;
+    }
+
+    void load(const void *pFontBase) {
+        SISOJE_FOR(c, CHARACTERS) {
+            letters[c].loadPixels((uint8_t*)pFontBase + c*HEIGHT);
+        }
+        for(auto& letter: letters) {
+            letter.calcAverages();
+        }
+        max_letter_index = std::max_element(SISOJE_RANGE(letters), [](const letter_type &x, const letter_type &y) {
+            return x.allAverage < y.allAverage;
+        }) - std::begin(letters);
+    }
+
+    static auto make_font(const void *pFontBase) {
+        font result;
+        result.load(pFontBase);
+        return result;
+    }
+};
+
+typedef font<> font_type;
+typedef std::array<sisoje::letter_similarity<font_type::level_type>, font_type::characters()> similarity_type;
 
 static const uint8_t defaultFont[95][13] = {
 {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},

@@ -3,82 +3,67 @@
 #include "cpp_tests.hpp"
 using namespace sisoje_tests;
 
-inline double grayscale(const uint8_t* pPixelBytes) {
-    return (0.299 / 255.0) * pPixelBytes[0] + (0.587 / 255.0) * pPixelBytes[1] + (0.114 / 255.0) * pPixelBytes[2];
-}
-inline double grayscaleR(const uint8_t* pPixelBytes) {
-    return pPixelBytes[0] / 255.0;
-}
-inline double grayscaleG(const uint8_t* pPixelBytes) {
-    return pPixelBytes[1] / 255.0;
-}
-inline double grayscaleB(const uint8_t* pPixelBytes) {
-    return pPixelBytes[2] / 255.0;
+template <typename T>
+inline T grayscale(const uint8_t* pPixelBytes) {
+    return (0.299 / 255.0) * T(pPixelBytes[0]) + (0.587 / 255.0) * T(pPixelBytes[1]) + (0.114 / 255.0) * T(pPixelBytes[2]);
 }
 
-template <typename COLORFUNC>
-inline std::vector<std::string> makeAscii(const void* pRgba, const int width, const int height, double sharpness, COLORFUNC func) {
-    constexpr size_t asciiFontWidth = 8;
-    constexpr size_t asciiFontHeight = 13;
-    constexpr size_t asciiCharacterNumber = 95;
-    constexpr size_t asciiFontPixels = asciiFontHeight * asciiFontHeight;
-    std::array<std::array<double, asciiFontWidth>, asciiFontHeight> charBits[asciiCharacterNumber];
-    double charBrightness[asciiCharacterNumber];
-    for(auto c=0; c<asciiCharacterNumber; ++c) {
-        auto &charBit = charBits[c];
-        sisoje::font_height<>::bit_lines(sisoje::defaultFont, c, charBit);
-        const auto *pRaw = &charBit[0][0];
-        charBrightness[c] = std::accumulate(pRaw, pRaw + asciiFontPixels, 0);
-    }
-
-    const double maxBrightness = *std::max_element(SISOJE_RANGE(charBrightness));
-
-    for(auto c=0; c<asciiCharacterNumber; ++c) {
-        charBrightness[c] /= maxBrightness;
-    }
-
-    const size_t asciiArtWidth = width / asciiFontWidth;
-    const size_t asciiArtHeight = height / asciiFontHeight;
-
-    std::vector<std::string> asciiArt(asciiArtHeight);
-    double brightMatch[asciiCharacterNumber];
-    for(auto ay=0; ay<asciiArtHeight; ++ay) {
-        auto &asciiLine = asciiArt[ay];
-        asciiLine.resize(asciiArtWidth);
-        for(auto ax=0; ax<asciiArtWidth; ++ax) {
-            const auto currentPixel = (ay * asciiFontHeight)*height + (ax * asciiFontWidth);
-            std::fill(SISOJE_RANGE(brightMatch), 0);
-            double grayall = 0;
-            for(auto y=0; y<asciiFontHeight; ++y) {
-                for(auto x=0; x<asciiFontWidth; ++x) {
-                    const auto currentPixelOfs = y*height + x;
-                    const auto pPixelBytes = (uint8_t*)pRgba + (currentPixel+currentPixelOfs)*4;
-                    double grayLevel = func(pPixelBytes);
-                    grayall += grayLevel;
-                    for(auto c=0; c<asciiCharacterNumber; ++c) {
-                        const auto bit = charBits[c][y][x];
-                        brightMatch[c] += pow(bit ? (1 - grayLevel) : grayLevel, 1);
-                    }
-                }
+template <size_t COMPONENTS = 4, typename FONT>
+inline auto makeAsciiComponent(const uint8_t* pOrigin, size_t width, const FONT& font) {
+    typedef typename FONT::level_type T;
+    std::array<sisoje::letter_similarity<T>, FONT::characters()> similarity;
+    T patchLevel = 0;
+    SISOJE_STRIDE(y, FONT::height(), py, pOrigin, width * COMPONENTS) {
+        SISOJE_STRIDE(x, FONT::width(), px, py, COMPONENTS) {
+            const T pixelLevel = *px / T(255);
+            SISOJE_FOR(c, FONT::characters()) {
+                similarity[c].detail += font.letters[c].pixels[y][x] ? (1 - pixelLevel) : pixelLevel;
             }
-            grayall /= asciiFontPixels;
-            for(auto c=0; c<asciiCharacterNumber; ++c) {
-                brightMatch[c] = brightMatch[c] / asciiFontPixels * sharpness;
-                brightMatch[c] += abs(charBrightness[c] - grayall) * (1 - sharpness);
-            }
-            const auto minIt = std::min_element(SISOJE_RANGE(brightMatch));
-            asciiLine[ax] = 32 + (minIt - brightMatch);
+            patchLevel += pixelLevel;
         }
     }
-    std::string &last = *asciiArt.rbegin();
-    const std::string ponzi = " @PonziDemocracy";
-    auto dst = last.rbegin();
-    auto src = ponzi.rbegin();
-    for(; dst != last.rend() && src != ponzi.rend(); src++, dst++) {
-        *dst = *src;
+    patchLevel /= FONT::area();
+    patchLevel *= font.maxBrighness();
+    SISOJE_FOR(c, FONT::characters()) {
+        similarity[c].level = abs(font.letters[c].allAverage - patchLevel);
+        similarity[c].detail /= FONT::area();
     }
-    return asciiArt;
+    return similarity;
 }
+
+std::vector<std::vector<sisoje::similarity_type>> asciiArtRGB(const void* pRgba, size_t width, size_t height, const sisoje::font_type& font) {
+    const size_t numCharsX = width / font.width();
+    const size_t numCharsY = height / font.height();
+    std::vector<std::vector<sisoje::similarity_type>> result(numCharsY);
+    SISOJE_STRIDE(y, numCharsY, py, (uint8_t*)pRgba, width*font.height()*4) {
+        result[y].resize(numCharsX);
+        SISOJE_STRIDE(x, numCharsX, px, py, font.width()*4) {
+            result[y][x] = makeAsciiComponent(px + (x + y%2) % 3, width, font);
+        }
+    }
+    return result;
+}
+
+std::vector<std::vector<char>> asciiArtByLevel(const std::vector<std::vector<sisoje::similarity_type>>& similarity, float koef) {
+    std::vector<std::vector<char>> result(similarity.size());
+    SISOJE_FOR(y, similarity.size()) {
+        const auto& similarityLine = similarity[y];
+        result[y].resize(similarityLine.size());
+        SISOJE_FOR(x, similarityLine.size()) {
+            const auto& similarityArray = similarityLine[x];
+            const auto minIt = std::min_element(SISOJE_RANGE(similarityArray), [koef](const auto &x, const auto &y) {
+                return x.detail*(1-koef) + x.level*koef < y.detail*(1-koef) + y.level*koef;
+            });
+
+            const auto minIndex = minIt - std::begin(similarityArray);
+            result[y][x] = 32 + minIndex;
+        }
+    }
+    return result;
+}
+
+
+
 
 @interface FontsTests : XCTestCase
 @end
@@ -86,61 +71,62 @@ inline std::vector<std::string> makeAscii(const void* pRgba, const int width, co
 @implementation FontsTests
 
 - (void)testFonts {
-    const int width = 512;
-    const int height = width;
-    NSString *base64 = [NSString stringWithUTF8String:nole512.c_str()];
+
+    const int width = 1024;
+    const int height = 1024;
+    /*
+    NSURL * urla = NSFileManager.defaultManager.homeDirectoryForCurrentUser;
+    urla = [urla URLByAppendingPathComponent:@"djolo.rgba" isDirectory:NO];
+    NSData *data = [NSData dataWithContentsOfURL:urla];*/
+
+    NSString *base64 = [NSString stringWithUTF8String:daca1024.c_str()];
     NSData *data = [[NSData alloc] initWithBase64EncodedString:base64 options:0];
     XCTAssertEqual(width*height*4, data.length);
-    auto date = [NSDate new];
-    auto artGray = makeAscii(data.bytes, width, height, 0.80, grayscale);
-    auto artR = makeAscii(data.bytes, width, height, 0.80, grayscaleR);
-    auto artG = makeAscii(data.bytes, width, height, 0.80, grayscaleG);
-    auto artB = makeAscii(data.bytes, width, height, 0.80, grayscaleB);
+
+    NSDate* date = [NSDate new];
+    const auto font = sisoje::font_type::make_font(sisoje::defaultFont);
+    NSLog(@"Font loading: %@", @(date.timeIntervalSinceNow));
+    date = [NSDate new];
+    auto similar = asciiArtRGB(data.bytes, width, height, font);
+    auto chars = asciiArtByLevel(similar, 0.175);
     auto elapsed = date.timeIntervalSinceNow;
-
-    std::vector<std::string> art(artR.size());
-    std::string htm;
-
-    std::string colorTags[] = {"r", "g", "b"};
-
-    for(auto y = 0; y < art.size(); ++y) {
-        const std::array<std::string*, 3> lines = {&artR[y], &artG[y], &artB[y]};
-        std::string &line = art[y];
-        line.resize(lines[0]->size());
-        for(auto x = 0; x < line.size(); ++x) {
-            auto colorIndex = (x + y%2) % 3;
-            auto ch = (*lines[colorIndex])[x];
-            auto sch = sisoje::htmlEscape(ch);
-            const auto &tag = colorTags[colorIndex];
-            line[x] = ch;
-            htm += "<"+tag+">"+sch+"</"+tag+">";
-        }
-        htm += "</br>";
-    }
-
-    NSURL * url = NSFileManager.defaultManager.homeDirectoryForCurrentUser;
-    url = [url URLByAppendingPathComponent:@"ascii.htm" isDirectory:NO];
-
-    NSData *fff = [NSData dataWithBytes:htm.data() length:htm.length()];
-    [fff writeToURL:url atomically:YES];
-
     NSLog(@"Asci took: %@", @(elapsed));
-    for(const auto& line: artGray) {
+    for(const auto& line: chars) {
         for(char ch: line) {
             std::cout << ch;
         }
         std::cout << std::endl;
     }
 
-    NSLog(@"Asci took: %@", @(elapsed));
-    for(const auto& line: art) {
-        for(char ch: line) {
-            auto sch = sisoje::htmlEscape(ch);
-            std::cout << sch;
+    std::string htm = "<!DOCTYPE html><html><body><style type='text/css'>\
+    body {\
+       color:#ffffff;\
+       background-color:#000000;\
+       font-family:courier, courier new, serif;\
+       font-size:8px;\
+    }\
+    r {color:#ff0000;}\
+    g {color:#00ff00;}\
+    b {color:#0000ff;}\
+    </style>";
+    
+    std::string colorTags[] = {"r", "g", "b"};
+    SISOJE_FOR(y, chars.size()) {
+        const auto& charLine = chars[y];
+        SISOJE_FOR(x, charLine.size()) {
+            auto colorIndex = (x + y%2) % 3;
+            auto sch = sisoje::htmlEscape(charLine[x]);
+            const auto &tag = colorTags[colorIndex];
+            htm += "<"+tag+">"+sch+"</"+tag+">";
         }
-        std::cout << "</br>" << std::endl;
+        htm += "</br>";
     }
-    NSLog(@"Asci took: %@", @(elapsed));
+    htm += "</body></html>";
+
+    NSURL * url = NSFileManager.defaultManager.homeDirectoryForCurrentUser;
+    url = [url URLByAppendingPathComponent:@"ascii.htm" isDirectory:NO];
+    NSData *fff = [NSData dataWithBytes:htm.data() length:htm.length()];
+    [fff writeToURL:url atomically:YES];
 }
 
 @end
